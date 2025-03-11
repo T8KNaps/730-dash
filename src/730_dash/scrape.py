@@ -15,7 +15,7 @@ class Blurb:
         self.b_type = b_type
 
     def __str__(self):
-        return (f"Blurb (Title: {self.title}, Type: {self.b_type})")
+        return (f"Blurb (Order: {self.order}, Title: '{self.title}', Type: {self.b_type})")
 
 class NlHandler:
 
@@ -70,7 +70,7 @@ class NlHandler:
 
 
     def _get_body(self, tag):
-        
+        # get the body of the blurb and any sub-bullets
         text = []
         main_body = tag.find_next_sibling("h4").get_text()
         bullet = tag.find_next_sibling("ul")
@@ -98,7 +98,6 @@ class NlHandler:
         # Build the Blurb
         blurb_count = 1
         
-        # 
         for tag in b_titles:
             blurb = Blurb()
             blurb.order = blurb_count
@@ -114,6 +113,7 @@ class NlHandler:
 
 
 if __name__ == "__main__":
+    # testing
     url = "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=c35f0dd0aa"
     # url = "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=ec7673a6f4"
     handler = NlHandler(url=url)
