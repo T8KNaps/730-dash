@@ -17,6 +17,7 @@ class Blurb:
     def __str__(self):
         return (f"Blurb (Order: {self.order}, Title: '{self.title}', Type: {self.b_type})")
 
+
 class NlHandler:
 
     def __init__(self, url: str):
@@ -59,7 +60,7 @@ class NlHandler:
             }
 
 
-    def check_tag(self, tag: Tag):
+    def check_tag(self, tag: Tag) -> str:
         # find where the blurb belongs
         if tag in self.markers["wtk"].find_all_previous(f"{tag.name}"):
             return "AD"
@@ -69,7 +70,7 @@ class NlHandler:
             return "WTD"
 
 
-    def _get_body(self, tag):
+    def _get_body(self, tag: Tag):
         # get the body of the blurb and any sub-bullets
         text = []
         main_body = tag.find_next_sibling("h4").get_text()
@@ -88,6 +89,7 @@ class NlHandler:
             print("Error. No text body or bullets found.")
         return text
 
+
     def _breakout_blurbs(self):
         """
         """
@@ -95,7 +97,7 @@ class NlHandler:
         # find the h1's of the blurbs needed to check
         b_titles = self.content.find_all("h1")
        
-        # Build the Blurb
+        # Build the Blurb and make a list
         blurb_count = 1
         
         for tag in b_titles:
