@@ -72,31 +72,6 @@ class NlHandler:
                 marker_dict["wtd"] = marker
             
         return marker_dict
-        
-        try:
-            # what to know
-            wtk_marker = self.content.find_all(name="img", 
-                                    src="https://gallery.mailchimp.com/576dfd24a3c9e732d2920f811/images/99c7afbf-22e1-485a-befa-77bfa4c09cc1.png")
-            wtk_marker = wtk_marker[0]
-
-            # what to do
-            wtd_marker = self.content.find_all(name="img", 
-                                    src="https://gallery.mailchimp.com/576dfd24a3c9e732d2920f811/images/686d06ad-1691-48c9-af9d-ec5766c203e3.png")
-            wtd_marker = wtd_marker[0]
-
-            # # weekly scheduler
-            # wtd_marker = self.content.find_all(name="img", 
-            #                         src="https://gallery.mailchimp.com/576dfd24a3c9e732d2920f811/images/686d06ad-1691-48c9-af9d-ec5766c203e3.png")
-            # wtd_marker = wtd_marker[0]
-
-        except IndexError:
-            print(f"Error: Marker for '{self.url}' not found.")
-        
-
-        return {
-            "wtk": wtk_marker,
-            "wtd": wtd_marker
-            }
 
 
     def check_tag(self, tag: Tag) -> str:
