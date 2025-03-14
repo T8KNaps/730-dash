@@ -74,7 +74,7 @@ class NlHandler:
         return marker_dict
 
 
-    def check_tag(self, tag: Tag) -> str:
+    def _check_tag(self, tag: Tag) -> str:
         # find where the blurb belongs
         if tag in self.markers["wtk"].find_all_previous(f"{tag.name}"):
             return "AD"
@@ -119,7 +119,7 @@ class NlHandler:
             blurb.order = blurb_count
             blurb.title = tag.get_text()
             blurb.body = self._get_body
-            blurb.b_type = self.check_tag(tag=tag)
+            blurb.b_type = self._check_tag(tag=tag)
             blurb_count += 1
             print(blurb)
 
