@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 
 
 class Blurb:
-    def __init__(self, order: int = 0, title: str = "", body: str = "", b_type: str = ""):
+    def __init__(self, order: int = 0, title: str = "", body: list = [], b_type: str = ""):
         self.id = uuid4()
         self.order = order
         self.title = title
@@ -84,7 +84,7 @@ class NlHandler:
             return "WTD"
 
 
-    def _get_body(self, tag: Tag):
+    def _get_body(self, tag: Tag) -> list:
         # get the body of the blurb and any sub-bullets
         text = []
         main_body = tag.find_next_sibling("h4").get_text()
@@ -104,9 +104,63 @@ class NlHandler:
         return text
 
 
+    def _get_tables(self):
+        # maybe introduce type var for TextBlock vs BoxedTextBlock
+        # try getting text tables instead of h1s and starting there
+        tables = self.content.find_all(name="td", class_="mcnTextBlock")
+        special_tables = self.content.find_all(name="td", class_="mcnBoxedTextBlock")
+
+
+        text_cells = self.content.find_all(name="td", class_="mcnTextContent")
+        titles = []
+        # for each td tag
+        for c in text_cells:
+            title = False
+
+            # for each child of td (h1, h4, etc.)
+            for child in c.children:
+                print(f"{child.get_text()}")
+                # skip these
+                if child.name is None:
+                    print("None")
+                    continue
+                # clear titles
+                elif child.name == "h1":
+                    title = True
+                    print("Found h1 title")
+                    titles.append(child)
+                    continue
+                # checking the h4's, could be bodies could be titles
+                elif child.name == "h4" and title == True:
+                    print("Passed blurb body")
+                    continue
+                elif child.contents:
+                    if child.contents[0].name == "strong":
+                        print("Found h4 title")
+                        titles.append(child)
+                        continue
+                    else:
+                        print(child.name)
+                        print("Probably a blurb sub-bullet?")
+                else:
+                    print(f"Possiblity not accounted for: {child.name}")
+                
+        # incororate a switch for when its the weekly scheduler? if that img marker is used
+        # try:
+        #   for h1 tag in table append to title []
+        # except:
+        # try:
+        #   for h4 in table:
+        #   if <strong> tag in h4.descendants(or children?)
+        #       <strong> tag append to title []
+        #   
+        return
+
     def _breakout_blurbs(self):
         """
         """
+
+        # call _get_tables()
 
         # find the h1's of the blurbs needed to check
         b_titles = self.content.find_all("h1")
@@ -129,6 +183,7 @@ class NlHandler:
 
 
 if __name__ == "__main__":
+    
     # testing
     url_list = [
         # "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=c35f0dd0aa",
@@ -142,5 +197,5 @@ if __name__ == "__main__":
 
     for url in url_list:
         handler = NlHandler(url=url)
-        handler._breakout_blurbs()
+        handler._get_tables()
         # print("-------------------------------------------------")
