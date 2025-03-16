@@ -26,6 +26,7 @@ class NlHandler:
         self.url = url
         self.content = self._nl_content()
         self.markers = self._get_markers()
+        self.weekly_s = False
         
 
     def _nl_content(self) -> BeautifulSoup:
@@ -68,14 +69,15 @@ class NlHandler:
             
             if img[0] == "wtk":
                 marker_dict["wtk"] = marker
-            else:
+            elif img[0] == "ws": 
+                self.weekly_s = True
                 marker_dict["wtd"] = marker
             
         return marker_dict
 
 
-    def _check_tag(self, tag: Tag) -> str:
-        # find where the blurb belongs
+    def _get_blurb_type(self, tag: Tag) -> str:
+        # Identify if blurb is an ad, wtk, or wtd
         if tag in self.markers["wtk"].find_all_previous(f"{tag.name}"):
             return "AD"
         elif tag in self.markers["wtd"].find_all_previous(f"{tag.name}"):
@@ -104,47 +106,105 @@ class NlHandler:
         return text
 
 
-    def _get_tables(self):
+    def check_h1(self, h1: Tag):
+        
+        # create a recursive func for checking parent
+        def check_parent(tag: Tag) -> bool:
+        
+            parent = tag.parent
+            p_class_ = parent.get("class")
+            
+            # in case it runs all the way up the html doc for some reason
+            if parent.name == "html":
+                return False
+            
+            # no class attribute
+            if p_class_ is None:
+                return check_parent(parent)
+            
+            # actual base cases
+            if p_class_ == ["mcnBoxedTextBlock"]:
+                return False
+            elif p_class_ == ["mcnTextBlock"]:
+                return True
+
+            # continue recursion
+            return check_parent(parent)
+        
+        # there is always a None sibling so do the next sibling after that
+        sib = h1.next_sibling.next_sibling
+        # see if it's boxed
+        check = check_parent(h1)
+        
+        if sib.name == "h4":
+            if check == True:
+                print("Title Found")
+            else:
+                print("It's a boxed item")
+        else:
+            print(sib.string)
+            print(sib.name)
+            print("Not a title?")
+    
+    # def check_h4(self, h4: Tag):
+
+
+    def _get_h1_h4(self):
         # maybe introduce type var for TextBlock vs BoxedTextBlock
         # try getting text tables instead of h1s and starting there
-        tables = self.content.find_all(name="td", class_="mcnTextBlock")
-        special_tables = self.content.find_all(name="td", class_="mcnBoxedTextBlock")
-
 
         text_cells = self.content.find_all(name="td", class_="mcnTextContent")
-        titles = []
-        # for each td tag
+        
+
+        def no_ws():
         for c in text_cells:
             title = False
-
-            # for each child of td (h1, h4, etc.)
+                # for each child of td (h1, h4, etc.)
             for child in c.children:
-                print(f"{child.get_text()}")
+                # print(f"{child.get_text()}")
                 # skip these
                 if child.name is None:
-                    print("None")
                     continue
                 # clear titles
                 elif child.name == "h1":
+                    print(self.check_h1(child))
                     title = True
-                    print("Found h1 title")
-                    titles.append(child)
                     continue
-                # checking the h4's, could be bodies could be titles
-                elif child.name == "h4" and title == True:
-                    print("Passed blurb body")
-                    continue
-                elif child.contents:
-                    if child.contents[0].name == "strong":
-                        print("Found h4 title")
-                        titles.append(child)
-                        continue
-                    else:
-                        print(child.name)
-                        print("Probably a blurb sub-bullet?")
                 else:
-                    print(f"Possiblity not accounted for: {child.name}")
-                
+                    continue
+
+        # if self.weekly_s == True:
+        # for each td tag
+        for c in text_cells:
+            title = False
+                # for each child of td (h1, h4, etc.)
+            for child in c.children:
+                # print(f"{child.get_text()}")
+                # skip these
+                if child.name is None:
+                    continue
+                # clear titles
+                elif child.name == "h1":
+                    print(self.check_h1(child))
+                    title = True
+                    continue
+                else:
+                    continue
+                # # checking the h4's, could be bodies could be titles
+                # elif child.name == "h4" and title == True:
+                #     print("Passed blurb body")
+                #     continue
+                # elif child.contents:
+                #     if child.contents[0].name == "strong":
+                #         print("Found h4 title")
+                #         titles.append(child)
+                #         continue
+                #     else:
+                #         print(child.name)
+                #         print("Probably a blurb sub-bullet?")
+                # else:
+                #     print(f"Possiblity not accounted for: {child.name}")
+                    
         # incororate a switch for when its the weekly scheduler? if that img marker is used
         # try:
         #   for h1 tag in table append to title []
@@ -173,7 +233,7 @@ class NlHandler:
             blurb.order = blurb_count
             blurb.title = tag.get_text()
             blurb.body = self._get_body
-            blurb.b_type = self._check_tag(tag=tag)
+            blurb.b_type = self._get_blurb_type(tag=tag)
             blurb_count += 1
             print(blurb)
 
@@ -197,5 +257,5 @@ if __name__ == "__main__":
 
     for url in url_list:
         handler = NlHandler(url=url)
-        handler._get_tables()
+        handler._get_h1_h4()
         # print("-------------------------------------------------")
