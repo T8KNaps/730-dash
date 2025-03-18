@@ -140,18 +140,10 @@ class NlHandler:
             if check == True:
                 return True
             else:
-                print("TAG WAS BOXED")
+                return False
         else:
             print("CHECK FALSE FOR: ", h1.get_text(), sib.name)
         
-        # if sib.name:
-        #     if check == True:
-        #         return True
-        #     else:
-        #         return False
-        # else:
-        #     print("CHECK FALSE FOR: ", h1.get_text(), sib.name)
-        #     return False
     
     # def check_h4(self, h4: Tag):
 
@@ -241,7 +233,7 @@ if __name__ == "__main__":
     
     # num of titles in each url above
     answers = [8, 18 , 13, 28]
-
+    round = 0
     for url, answer in zip(url_list,answers):
         handler = NlHandler(url=url)
         test = handler._get_h1_h4()
@@ -251,9 +243,11 @@ if __name__ == "__main__":
             print("TEST ERRORED/INCOMPLETE")
             continue
         if len(test) == answer:
-            print("TEST PASSED")
+            print(f"TEST {round} PASSED")
         else:
-            print("TEST FAILED")
+            print(f"TEST {round} FAILED")
+            print(f"MISSED BY {abs(answer - len(test))} TITLES")
+        round += 1
         # test results
 
         print("-------------------------------------------------")
