@@ -63,7 +63,7 @@ class NlHandler:
             
             # catch when the marker isn't in the newsletter
             except IndexError:
-                print(f"Error: {img[0].upper()} image marker not found for {self.url}")
+                # print(f"Error: {img[0].upper()} image marker not found for {self.url}")
                 continue
             
             if img[0] == "wtk":
@@ -105,7 +105,7 @@ class NlHandler:
         return text
 
 
-    def check_h1(self, h1: Tag):
+    def check_h1(self, h1: Tag) -> bool:
         
         # create a recursive func for checking parent
         def check_parent(tag: Tag) -> bool:
@@ -130,7 +130,7 @@ class NlHandler:
             # continue recursion
             return check_parent(parent)
         
-        # there is always a None sibling so do the next sibling after that
+        # there is always a None sibling so check the next sibling after that
         sib = h1.next_sibling.next_sibling
         # see if it's boxed
         check = check_parent(h1)
@@ -165,13 +165,28 @@ class NlHandler:
         def ws():
 
             for tag in text:
+
                 if tag.name == "h1":
                     if self.check_h1(h1=tag):
                         titles.append(tag)
                         continue
                     continue
-                if tag.contents[0].name == "strong":
-                    titles.append(tag)
+
+                elif tag.name == "h4":
+                    try:
+                        for i in tag.contents:
+                            if i.name == "strong":
+                                titles.append(i)
+                            continue
+
+                            # for i in strong_tag.find_next_sibling("strong"):
+                            #     if i.name == "strong":
+
+                    except:
+                        strong_tag = tag.contents[0]
+                        if tag.contents[0].name =="strong":
+                            titles.append(tag)
+                            titles.append(strong_tag)
                     continue
             return titles
         
@@ -184,7 +199,7 @@ class NlHandler:
             # for t in title_list:
             #     print(t.get_text())    
         else:
-            title_list = no_ws()
+            title_list = ws()
             # for t in title_list:
             #     print(t.get_text())
         return title_list
@@ -219,15 +234,16 @@ class NlHandler:
 if __name__ == "__main__":
     
     url_list = [
+        # Typical newsletter
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=c35f0dd0aa",
         
         # For url below, test Thursday newsletter with changed WTD titles
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=ec7673a6f4",
         
-        # For url below, see if the font size mistake makes a difference
+        # For url below, different font size for WTD blurb bodies
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=63b262de00",
         
-        # For the url below, need to add a 'weekly scheduler' img marker for when there is no wtd marker
+        # For the url below, weekly scheduler
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=04ac2c19ea"
     ]
     
@@ -247,6 +263,11 @@ if __name__ == "__main__":
         else:
             print(f"TEST {round} FAILED")
             print(f"MISSED BY {abs(answer - len(test))} TITLES")
+            print(f"TITLES FOUND:")
+            num = 1
+            for t in test:
+                print((num, t.get_text()))
+                num += 1
         round += 1
         # test results
 
