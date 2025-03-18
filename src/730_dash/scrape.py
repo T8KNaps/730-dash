@@ -156,54 +156,30 @@ class NlHandler:
 
     def _get_h1_h4(self):
 
-        # if weekly scheduler is False
-        def no_ws():
-
-            for tag in text:
-                if tag.name == "h1":
-                    if self.check_boxed(h1=tag):
-                        titles.append(tag)
-                        continue
-                continue
-            return titles
-
-        # if weekly scheduler is True
-        def ws():
-
-            for tag in text:
-
-                if tag.name == "h1":
-                    if self.check_boxed(tag=tag):
-                        titles.append(tag)
-                        continue
-                    continue
-
-                elif tag.name == "h4":
-                    
-                    try:
-                        for i in tag.contents:
-                            if i.name == "strong":
-                                if self.check_boxed(tag=tag):
-                                    titles.append(i)
-                            continue
-
-                    except:
-                        continue
-            return titles
-        
-
         text = self.content.find_all(["h1", "h4"])
         titles = []
 
-        if self.weekly_s == True:
-            title_list = ws()
-            # for t in title_list:
-            #     print(t.get_text())    
-        else:
-            title_list = ws()
-            # for t in title_list:
-            #     print(t.get_text())
-        return title_list
+        for tag in text:
+
+            if tag.name == "h1":
+                if self.check_boxed(tag=tag):
+                    titles.append(tag)
+                    continue
+                continue
+
+            elif tag.name == "h4":
+                
+                try:
+                    for i in tag.contents:
+                        if i.name == "strong":
+                            if self.check_boxed(tag=tag):
+                                titles.append(i)
+                        continue
+
+                except:
+                    continue
+        return titles
+        
 
     def _breakout_blurbs(self):
         """
