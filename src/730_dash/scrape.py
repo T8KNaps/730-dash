@@ -105,8 +105,10 @@ class NlHandler:
         return text
 
 
-    def check_h1(self, h1: Tag) -> bool:
+    def check_boxed(self, tag: Tag, h1=False) -> bool:
         
+        if tag.name == "h1":
+            h1 = True
         # create a recursive func for checking parent
         def check_parent(tag: Tag) -> bool:
         
@@ -130,19 +132,23 @@ class NlHandler:
             # continue recursion
             return check_parent(parent)
         
-        # there is always a None sibling so check the next sibling after that
-        sib = h1.next_sibling.next_sibling
         # see if it's boxed
-        check = check_parent(h1)
+        check = check_parent(tag=tag)
         
+        # check what comes after the h1
+        if h1 == True:
 
-        if sib.name == "h4" or sib.name == "p" or sib.name == "ul":
-            if check == True:
-                return True
+            # there is always a None sibling so check the next sibling after that
+            sib = tag.next_sibling.next_sibling
+            if sib.name == "h4" or sib.name == "p" or sib.name == "ul":
+                if check == True:
+                    return True
+                else:
+                    return False
             else:
-                return False
-        else:
-            print("CHECK FALSE FOR: ", h1.get_text(), sib.name)
+                print("CHECK FALSE FOR: ", tag.get_text(), sib.name)
+        
+        return check
         
     
     # def check_h4(self, h4: Tag):
@@ -155,7 +161,7 @@ class NlHandler:
 
             for tag in text:
                 if tag.name == "h1":
-                    if self.check_h1(h1=tag):
+                    if self.check_boxed(h1=tag):
                         titles.append(tag)
                         continue
                 continue
@@ -167,27 +173,22 @@ class NlHandler:
             for tag in text:
 
                 if tag.name == "h1":
-                    if self.check_h1(h1=tag):
+                    if self.check_boxed(tag=tag):
                         titles.append(tag)
                         continue
                     continue
 
                 elif tag.name == "h4":
+                    
                     try:
                         for i in tag.contents:
                             if i.name == "strong":
-                                titles.append(i)
+                                if self.check_boxed(tag=tag):
+                                    titles.append(i)
                             continue
 
-                            # for i in strong_tag.find_next_sibling("strong"):
-                            #     if i.name == "strong":
-
                     except:
-                        strong_tag = tag.contents[0]
-                        if tag.contents[0].name =="strong":
-                            titles.append(tag)
-                            titles.append(strong_tag)
-                    continue
+                        continue
             return titles
         
 
