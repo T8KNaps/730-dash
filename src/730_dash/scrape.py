@@ -231,8 +231,7 @@ class NlHandler:
         return (f"NLHandler (Newsletter: '{self.content.title.get_text()}')")
 
 
-# TEST
-if __name__ == "__main__":
+def nl_variance_test():
     
     url_list = [
         # Typical newsletter
@@ -273,3 +272,8 @@ if __name__ == "__main__":
         # test results
 
         print("-------------------------------------------------")
+
+
+# RUN TEST
+if __name__ == "__main__":
+    nl_variance_test()
