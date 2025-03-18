@@ -25,8 +25,7 @@ class NlHandler:
     def __init__(self, url: str):
         self.url = url
         self.content = self._nl_content()
-        self.markers = self._get_markers()
-        self.weekly_s = False
+        self.weekly_s, self.markers = self._get_markers()
         
 
     def _nl_content(self) -> BeautifulSoup:
@@ -45,7 +44,7 @@ class NlHandler:
         """
         Create the markers (bs4.Tag objects) used to triangulate a Blurb.type. 
         """
-
+        weekly_s = False
         marker_dict = {}
 
         img_url = [
@@ -70,10 +69,10 @@ class NlHandler:
             if img[0] == "wtk":
                 marker_dict["wtk"] = marker
             elif img[0] == "ws": 
-                self.weekly_s = True
+                weekly_s = True
                 marker_dict["wtd"] = marker
             
-        return marker_dict
+        return weekly_s, marker_dict
 
 
     def _get_blurb_type(self, tag: Tag) -> str:
@@ -136,85 +135,67 @@ class NlHandler:
         # see if it's boxed
         check = check_parent(h1)
         
-        if sib.name == "h4":
+
+        if sib.name == "h4" or sib.name == "p" or sib.name == "ul":
             if check == True:
-                print("Title Found")
+                return True
             else:
-                print("It's a boxed item")
+                print("TAG WAS BOXED")
         else:
-            print(sib.string)
-            print(sib.name)
-            print("Not a title?")
+            print("CHECK FALSE FOR: ", h1.get_text(), sib.name)
+        
+        # if sib.name:
+        #     if check == True:
+        #         return True
+        #     else:
+        #         return False
+        # else:
+        #     print("CHECK FALSE FOR: ", h1.get_text(), sib.name)
+        #     return False
     
     # def check_h4(self, h4: Tag):
 
 
     def _get_h1_h4(self):
-        # maybe introduce type var for TextBlock vs BoxedTextBlock
-        # try getting text tables instead of h1s and starting there
 
-        text_cells = self.content.find_all(name="td", class_="mcnTextContent")
+        # if weekly scheduler is False
+        def no_ws():
+
+            for tag in text:
+                if tag.name == "h1":
+                    if self.check_h1(h1=tag):
+                        titles.append(tag)
+                        continue
+                continue
+            return titles
+
+        # if weekly scheduler is True
+        def ws():
+
+            for tag in text:
+                if tag.name == "h1":
+                    if self.check_h1(h1=tag):
+                        titles.append(tag)
+                        continue
+                    continue
+                if tag.contents[0].name == "strong":
+                    titles.append(tag)
+                    continue
+            return titles
         
 
-        def no_ws():
-        for c in text_cells:
-            title = False
-                # for each child of td (h1, h4, etc.)
-            for child in c.children:
-                # print(f"{child.get_text()}")
-                # skip these
-                if child.name is None:
-                    continue
-                # clear titles
-                elif child.name == "h1":
-                    print(self.check_h1(child))
-                    title = True
-                    continue
-                else:
-                    continue
+        text = self.content.find_all(["h1", "h4"])
+        titles = []
 
-        # if self.weekly_s == True:
-        # for each td tag
-        for c in text_cells:
-            title = False
-                # for each child of td (h1, h4, etc.)
-            for child in c.children:
-                # print(f"{child.get_text()}")
-                # skip these
-                if child.name is None:
-                    continue
-                # clear titles
-                elif child.name == "h1":
-                    print(self.check_h1(child))
-                    title = True
-                    continue
-                else:
-                    continue
-                # # checking the h4's, could be bodies could be titles
-                # elif child.name == "h4" and title == True:
-                #     print("Passed blurb body")
-                #     continue
-                # elif child.contents:
-                #     if child.contents[0].name == "strong":
-                #         print("Found h4 title")
-                #         titles.append(child)
-                #         continue
-                #     else:
-                #         print(child.name)
-                #         print("Probably a blurb sub-bullet?")
-                # else:
-                #     print(f"Possiblity not accounted for: {child.name}")
-                    
-        # incororate a switch for when its the weekly scheduler? if that img marker is used
-        # try:
-        #   for h1 tag in table append to title []
-        # except:
-        # try:
-        #   for h4 in table:
-        #   if <strong> tag in h4.descendants(or children?)
-        #       <strong> tag append to title []
-        #   
-        return
+        if self.weekly_s == True:
+            title_list = ws()
+            # for t in title_list:
+            #     print(t.get_text())    
+        else:
+            title_list = no_ws()
+            # for t in title_list:
+            #     print(t.get_text())
+        return title_list
 
     def _breakout_blurbs(self):
         """
@@ -242,20 +223,37 @@ class NlHandler:
         return (f"NLHandler (Newsletter: '{self.content.title.get_text()}')")
 
 
+# TEST
 if __name__ == "__main__":
     
-    # testing
     url_list = [
-        # "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=c35f0dd0aa",
-        # "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=ec7673a6f4",
+        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=c35f0dd0aa",
+        
+        # For url below, test Thursday newsletter with changed WTD titles
+        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=ec7673a6f4",
+        
         # For url below, see if the font size mistake makes a difference
-        # "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=63b262de00",
+        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=63b262de00",
+        
         # For the url below, need to add a 'weekly scheduler' img marker for when there is no wtd marker
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=04ac2c19ea"
     ]
+    
+    # num of titles in each url above
+    answers = [8, 18 , 13, 28]
 
-
-    for url in url_list:
+    for url, answer in zip(url_list,answers):
         handler = NlHandler(url=url)
-        handler._get_h1_h4()
-        # print("-------------------------------------------------")
+        test = handler._get_h1_h4()
+        try:
+            len(test)
+        except TypeError:
+            print("TEST ERRORED/INCOMPLETE")
+            continue
+        if len(test) == answer:
+            print("TEST PASSED")
+        else:
+            print("TEST FAILED")
+        # test results
+
+        print("-------------------------------------------------")
