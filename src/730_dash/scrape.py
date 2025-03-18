@@ -207,7 +207,7 @@ class NlHandler:
         return (f"NLHandler (Newsletter: '{self.content.title.get_text()}')")
 
 
-def nl_variance_test():
+def get_titles_test():
     
     url_list = [
         # Typical newsletter
@@ -220,11 +220,14 @@ def nl_variance_test():
         "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=63b262de00",
         
         # For the url below, weekly scheduler
-        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=04ac2c19ea"
+        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=04ac2c19ea",
+
+        # Another typical newsletter
+        "https://us7.campaign-archive.com/?u=576dfd24a3c9e732d2920f811&id=414ffe4b20"
     ]
     
-    # num of titles in each url above
-    answers = [8, 18 , 13, 28]
+    # num of titles (not including boxed) in each url above
+    answers = [8, 18 , 13, 28, 11]
     round = 0
     for url, answer in zip(url_list,answers):
         handler = NlHandler(url=url)
@@ -232,12 +235,12 @@ def nl_variance_test():
         try:
             len(test)
         except TypeError:
-            print("TEST ERRORED/INCOMPLETE")
+            print("TITLE TEST ERRORED/INCOMPLETE")
             continue
         if len(test) == answer:
-            print(f"TEST {round} PASSED")
+            print(f"TITLE TEST {round} PASSED")
         else:
-            print(f"TEST {round} FAILED")
+            print(f"TITLE TEST {round} FAILED")
             print(f"MISSED BY {abs(answer - len(test))} TITLES")
             print(f"TITLES FOUND:")
             num = 1
@@ -252,4 +255,4 @@ def nl_variance_test():
 
 # RUN TEST
 if __name__ == "__main__":
-    nl_variance_test()
+    get_titles_test()
